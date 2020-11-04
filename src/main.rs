@@ -1,13 +1,13 @@
-use actix_web::{get,web,App,HttpServer,Responder,HttpResponse,Result,HttpRequest,middleware};
+use actix_web::{get,web,App,HttpServer,Responder,HttpResponse,Result,HttpRequest,middleware,Error as AWError};
 mod zhuge;
 use std::io::Write;
-use futures::future::join_all;
 use r2d2_sqlite::{self, SqliteConnectionManager};
 use env_logger::fmt::Color;
 use chrono::Local;
-use zhuge::{Zhuge,action,Pool};
-async fn get_score(db:web::Data<Pool>)->Result<HttpResponse, AWError>{
-    zhuge::get_score()
+
+async fn get_score()->Result<HttpResponse, AWError>{
+    let result = zhuge::get_score(&db).await?;
+    Ok(HttpResponse::Ok().json(result))
 }
 
 #[actix_web::main]
