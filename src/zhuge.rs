@@ -33,7 +33,8 @@ impl Future<Output=Result<usize,AWError>>{
     })
     .map_err(AWError::from)
 }
-fn get_score(conn:Connection) ->ZugeResult {
+fn get_score(pool:&Pool) ->ZugeResult {
+    let conn=pool.get().unwrap();
     let mut  stmt=conn.prepare(
         "
         SELECT * FROM zuge_score

@@ -1,10 +1,18 @@
 use actix_web::{get,web,App,HttpServer,Responder,HttpResponse,Result,HttpRequest,middleware};
 mod zhuge;
 use std::io::Write;
+use futures::future::join_all;
+use r2d2_sqlite::{self, SqliteConnectionManager};
 use env_logger::fmt::Color;
 use chrono::Local;
+use zhuge::{Zhuge,action,Pool};
+async fn get_score(db:web::Data<Pool>)->Result<HttpResponse, AWError>{
+    zhuge::get_score()
+}
+
 #[actix_web::main]
 async fn main()->std::io::Result<()>{
+
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::builder().format(|buf, record| {
         let mut level_style = buf.style();
@@ -16,6 +24,9 @@ async fn main()->std::io::Result<()>{
         level_style.value(record.level()),
         record.args())
     }).init();
+
+    let manager = SqliteConnectionManager::file("blog.db");
+    let pool = Pool::new(manager).unwrap();
 
 
     HttpServer::new(||
