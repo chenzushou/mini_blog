@@ -1,13 +1,13 @@
 use actix_web::{get,web,App,HttpServer,Responder,HttpResponse,Result,HttpRequest,middleware,Error as AWError};
 mod zhuge;
 use std::io::Write;
-use r2d2_sqlite::{self, SqliteConnectionManager};
 use env_logger::fmt::Color;
 use chrono::Local;
+use zhuge::{Zhuge};
 
-async fn get_score()->Result<HttpResponse, AWError>{
-    let result = zhuge::get_score(&db).await?;
-    Ok(HttpResponse::Ok().json(result))
+async fn get_score(data: web::Data<Zhuge>)->impl Responder{
+    let result = zhuge::get_score().unwrap();
+    HttpResponse::Ok().json(result)
 }
 
 #[actix_web::main]
@@ -25,16 +25,15 @@ async fn main()->std::io::Result<()>{
         record.args())
     }).init();
 
-    let manager = SqliteConnectionManager::file("blog.db");
-    let pool = Pool::new(manager).unwrap();
 
 
-    HttpServer::new(||
+    HttpServer::new(move||
         App::new()
         .wrap(middleware::Logger::default())
         .service(actix_files::Files::new("/","./static/").index_file("index.html"))
+        .service(web::resource("/zugescore").route(web::post().to(get_score)))
     )
-    .bind("172.26.242.57:80")?
+    .bind("127.0.0.1:8080")?
     .run()
     .await
-}
+}   
