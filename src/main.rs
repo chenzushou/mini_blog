@@ -10,6 +10,14 @@ fn get_score()->HttpResponse{
     let result = zhuge::get_score().unwrap();
     HttpResponse::Ok().header(ACCESS_CONTROL_ALLOW_ORIGIN, "*").json(result)
 }
+fn add_score()->HttpResponse{
+    zhuge::add_score();
+    get_score()
+}
+fn sub_score()->HttpResponse{
+    zhuge::sub_score();
+    get_score()
+}
 
 #[actix_web::main]
 async fn main()->std::io::Result<()>{
@@ -33,7 +41,9 @@ async fn main()->std::io::Result<()>{
         .wrap(middleware::Logger::default())
         .service(  
         web::scope("/zugescore")
-                .route("", web::get().to(get_score))
+                .route("/get", web::get().to(get_score))
+                .route("/add", web::get().to(add_score))
+                .route("/sub", web::get().to(sub_score))
         )
         .service(actix_files::Files::new("/","./static/").index_file("index.html"))
     }     
